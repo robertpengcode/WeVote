@@ -38,6 +38,7 @@ contract WeVote {
     }
 
     function createVote(string calldata voteURI, uint numOfOptions, uint endTime) external memberOnly {
+        require(endTime > block.timestamp, "end time must be in the future");
         require(numOfOptions > 1 && numOfOptions <= 5, "# of options should between 2 and 5");
         uint voteId = nextVoteId;
         Vote storage newVote = votes[voteId];
