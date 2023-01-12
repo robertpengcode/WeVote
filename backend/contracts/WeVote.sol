@@ -11,7 +11,7 @@ contract WeVote {
         mapping(address => bool) isVoted;
         uint endTime;
     }
-    mapping(address => bool) members;
+    mapping(address => bool) public members;
     mapping(uint => Vote) votes;
 
     modifier memberOnly {
