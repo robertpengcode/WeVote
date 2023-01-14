@@ -6,43 +6,75 @@ import ProgressBar from "react-bootstrap/ProgressBar";
 
 const Vote = ({ contract }) => {
   const [votesArr, setVotesArr] = useState([]);
+  const gateway = "https://gateway.pinata.cloud/";
 
-  useEffect(() => {}, [contract]);
+  useEffect(() => {
+    if (!contract) return;
 
-  const voteFunc = async () => {
+    const filter = contract.filters.CreateVote();
+    contract
+      .queryFilter(filter)
+      .then((result) => {
+        createdVotesProcessor(result);
+      })
+      .catch((err) => console.log("err", err));
+  }, [contract]);
+
+  const createdVotesProcessor = async (votesCreated) => {
+    const promises = [];
+    const votesData = [];
+    for (const voteCreated of votesCreated) {
+      const voteId = voteCreated.args.voteId.toNumber();
+      const promise = contract
+        .getVote(voteId)
+        .then(async (voteData) => {
+          const owner = voteData[0];
+          const uri = voteData[1];
+          if (!uri) return;
+          const record = voteData[3].map((num) => num.toNumber());
+          const endTime = voteData[4].toNumber();
+          const processedVote = {
+            owner: owner,
+            index: voteId,
+            votes: record,
+            total: record.reduce((sum, num) => sum + num, 0),
+            endTime: endTime,
+          };
+
+          try {
+            await fetch(gateway + uri)
+              .then((result) => result.json())
+              .then((data) => {
+                processedVote.description = data.description;
+                processedVote.options = data.options;
+              });
+          } catch (err) {
+            console.log(err);
+          }
+          votesData.push(processedVote);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+
+      promises.push(promise);
+    }
+    await Promise.all(promises);
+    setVotesArr(votesData);
+  };
+
+  const voteFunc = async (voteId, option) => {
     await contract
-      .vote()
+      .vote(voteId, option)
       .then(() => alert("vote success!"))
       .catch((err) => {
         alert(err.message);
       });
   };
 
-  const vote1 = {
-    index: 0,
-    description: "Who was the best NBA player?",
-    options: [
-      "Larry Bird",
-      "Michael Jordan",
-      "Kobe Bryant",
-      "LeBron James",
-      "Stephen Curry",
-    ],
-    votes: [1, 5, 3, 2, 2],
-    total: 13,
-  };
-  const vote2 = {
-    index: 1,
-    description: "What is your favorite programming language?",
-    options: ["Java", "C++", "Python", "JavaScript", "Solidity"],
-    votes: [1, 2, 3, 4, 5],
-    total: 15,
-  };
-  const testVotes = [vote1, vote2];
-
   return (
     <Container>
-      {testVotes.map((vote, id) => (
+      {votesArr.map((vote, id) => (
         <Card key={id} className="my-2">
           <Card.Header>{vote.description}</Card.Header>
           <Card.Body>

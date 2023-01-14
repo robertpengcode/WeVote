@@ -14,7 +14,7 @@ const CreateVote = ({ contract }) => {
       return;
     }
     await contract
-      .createVote(voteURI, numOfOptions, new Date(endTime).getTime())
+      .createVote(voteURI, numOfOptions, new Date(endTime).getTime() / 1000)
       .then(() => alert("create vote success!"))
       .catch((err) => {
         alert(err.message);
