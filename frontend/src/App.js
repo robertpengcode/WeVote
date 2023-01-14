@@ -33,7 +33,6 @@ function App() {
   }, []);
 
   const connectMetaMask = async () => {
-    //console.log("run connect");
     const { contract } = await connect();
     if (contract) {
       setContract(contract);
@@ -43,7 +42,6 @@ function App() {
   };
 
   const joinMember = async () => {
-    //console.log("run join");
     if (!contract) {
       alert("Please connect to MetaMask!");
     } else {
@@ -54,7 +52,7 @@ function App() {
           alert("Joint!");
         })
         .catch((err) => {
-          console.log(err);
+          alert(err.message);
         });
     }
   };
@@ -71,8 +69,11 @@ function App() {
         <div className="container">
           <Routes>
             <Route path="" element={<Home />} />
-            <Route path="create-vote" element={<CreateVote />} />
-            <Route path="vote" element={<Vote />} />
+            <Route
+              path="create-vote"
+              element={<CreateVote contract={contract} />}
+            />
+            <Route path="vote" element={<Vote contract={contract} />} />
           </Routes>
         </div>
       </Router>

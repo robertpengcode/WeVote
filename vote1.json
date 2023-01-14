@@ -1,0 +1,4 @@
+{
+    "description": "Who was the best NBA player?",
+    "options": ["Larry Bird","Michael Jordan", "Kobe Bryant", "LeBron James", "Stephen Curry"]
+}
